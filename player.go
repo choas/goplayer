@@ -78,6 +78,12 @@ func serveDirectory(fn string, w http.ResponseWriter,
 		entries[k].Name = files[k].Name()
 		entries[k].IsDir = files[k].IsDir()
 		entries[k].Mode = files[k].Mode()
+
+		fn := *root + entries[k].Name
+		fi, err := os.Stat(fn)
+		if err == nil {
+			entries[k].IsDir = fi.IsDir()
+		}
 	}
 
 	j := json.NewEncoder(w)
