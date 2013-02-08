@@ -76,14 +76,8 @@ func serveDirectory(fn string, w http.ResponseWriter,
 	for k := range files {
 		//log.Print(files[k].Name())
 		entries[k].Name = files[k].Name()
-		entries[k].IsDir = files[k].IsDir()
+		entries[k].IsDir = isDirOrSymbLinkAsDir(files[k])
 		entries[k].Mode = files[k].Mode()
-
-		fn := *root + entries[k].Name
-		fi, err := os.Stat(fn)
-		if err == nil {
-			entries[k].IsDir = fi.IsDir()
-		}
 	}
 
 	j := json.NewEncoder(w)
@@ -91,4 +85,17 @@ func serveDirectory(fn string, w http.ResponseWriter,
 	if err := j.Encode(&entries); err != nil {
 		panic(err)
 	}
+}
+
+func isDirOrSymbLinkAsDir(fileinfo os.FileInfo) bool {
+	if fileinfo.IsDir() {
+		return true
+	}
+	fn := *root + fileinfo.Name()
+	fi, err := os.Stat(fn)
+	if err == nil {
+		return fi.IsDir()
+	}
+
+	return false
 }
